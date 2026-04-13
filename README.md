@@ -1,112 +1,57 @@
-# Amazing Time Tracker Backend (feat/backend)
+# Amazing Time Tracker
 
-This branch implements the backend API for the **Amazing Time Tracker** project.
+Amazing Time Tracker is a simple internal tool for logging daily time and activities.
 
-## Tech Stack
-- FastAPI (Python 3.11+)
-- In-memory store (no external database)
-- uv as Python package/dependency manager
+## Backend
 
-## Time Entry Model
-Each time entry has the following fields:
-- `id` (string, generated UUID)
-- `date` (string, ISO date `YYYY-MM-DD`)
-- `person_name` (string, required, non-blank)
-- `activity` (string, required, non-blank)
-- `duration_minutes` (integer, required, > 0)
-- `notes` (string, optional)
-- `created_at` (ISO datetime, server-generated)
+The backend is a FastAPI application exposing a small CRUD API for time entries under `/api/v1`.
 
-## API Base URL
-All endpoints are prefixed with `/api/v1`.
+Key endpoints:
+- `GET /health` – health check
+- `GET /api/v1/time-entries/` – list all entries
+- `POST /api/v1/time-entries/` – create a new entry
+- `DELETE /api/v1/time-entries/{id}` – delete an entry
 
-### Health Check
-- `GET /health`
-  - **Response 200**: `{ "status": "ok" }`
+## Frontend (HTML/CSS/JS)
 
-### Time Entries
+The frontend is a single static page in the `frontend/` directory, built with plain HTML, CSS, and JavaScript (no framework).
 
-#### List time entries
-- `GET /api/v1/time-entries/`
-- **Response 200**: `[{...TimeEntry}, ...]`
+### Files
 
-#### Get time entry by id
-- `GET /api/v1/time-entries/{id}`
-- **Response 200**: `{...TimeEntry}`
-- **404**: `{ "error": "not_found", "message": "Time entry with id {id} does not exist", "detail": null }`
+- `frontend/index.html` – main page with:
+  - A form to add a new time entry (date, person name, activity, duration in minutes, optional notes).
+  - A table listing all existing entries with columns: Date, Person, Activity, Duration (min), Notes, Actions.
+  - A Delete button per row to remove an entry.
+- `frontend/styles.css` – basic, responsive styling for the layout, form, and table.
+- `frontend/app.js` – all client-side logic:
+  - Loads entries from `GET /api/v1/time-entries/` on page load and when the user clicks **Refresh**.
+  - Submits the form via `POST /api/v1/time-entries/` and refreshes the list on success.
+  - Deletes entries via `DELETE /api/v1/time-entries/{id}` and refreshes the list on success.
+  - Shows simple loading and error messages and disables the submit button while a request is in-flight.
+- `frontend/Dockerfile` – nginx-based image that serves the static files from `/usr/share/nginx/html` on port 3000.
+- `frontend/nginx.conf` – nginx configuration used by the Dockerfile.
+- `frontend/railway.toml` – Railway configuration for building and running the frontend service using the Dockerfile.
 
-#### Create time entry
-- `POST /api/v1/time-entries/`
-- **Request body**:
-```json
-{
-  "date": "2026-04-13",
-  "person_name": "Jane Doe",
-  "activity": "Pair programming",
-  "duration_minutes": 60,
-  "notes": "Worked on API design"
-}
-```
-- **Response 201**:
-```json
-{
-  "id": "generated-uuid",
-  "date": "2026-04-13",
-  "person_name": "Jane Doe",
-  "activity": "Pair programming",
-  "duration_minutes": 60,
-  "notes": "Worked on API design",
-  "created_at": "2026-04-13T10:00:00.000000"
-}
+### API base URL
+
+The frontend uses the following logic for the API base URL:
+
+```js
+const API_BASE_URL = (window.__API_BASE_URL__ || "http://localhost:8000/api/v1").replace(/\/$/, "");
 ```
 
-#### Update time entry (partial)
-- `PATCH /api/v1/time-entries/{id}`
-- **Request body** (any subset of fields):
-```json
-{
-  "activity": "Updated activity description",
-  "duration_minutes": 90
-}
-```
-- **Response 200**: updated `TimeEntry`
-- **404**: same error shape as above
+- For local development, it defaults to `http://localhost:8000/api/v1` (matching `docker-compose.yml`).
+- In production (Railway), DevOps can inject `window.__API_BASE_URL__` via a small inline script or template so the frontend points at the deployed backend domain.
 
-#### Delete time entry
-- `DELETE /api/v1/time-entries/{id}`
-- **Response 204**: no body
-- **404**: same error shape as above
+### Local development
 
-## Error Responses
-All custom errors use the following structure:
-```json
-{
-  "error": "not_found",
-  "message": "Time entry with id {id} does not exist",
-  "detail": null
-}
-```
-
-FastAPI/Pydantic validation errors return the default 422 response body.
-
-## Running Locally
+With Docker and docker-compose installed:
 
 ```bash
-uv sync
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+docker-compose up --build
 ```
 
-Or via Docker Compose from the repo root:
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
 
-```bash
-docker compose up --build
-```
-
-## Tests
-
-Backend tests live under `backend/tests/` and can be run with:
-
-```bash
-cd backend
-pytest
-```
+The frontend will call the backend at `http://localhost:8000/api/v1`.
