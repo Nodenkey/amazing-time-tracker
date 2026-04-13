@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amazing Time Tracker</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Amazing Time Tracker</h1>
+      <p>Log daily time and activities and see the shared running list.</p>
+    </header>
+
+    <section aria-labelledby="time-entry-form-heading" class="card">
+      <h2 id="time-entry-form-heading">Add time entry</h2>
+      <form id="time-entry-form" novalidate>
+        <div class="form-grid">
+          <label>
+            <span>Date</span>
+            <input type="date" id="date" name="date" required />
+          </label>
+          <label>
+            <span>Person name</span>
+            <input type="text" id="person_name" name="person_name" required />
+          </label>
+          <label>
+            <span>Activity</span>
+            <input type="text" id="activity" name="activity" required />
+          </label>
+          <label>
+            <span>Duration (minutes)</span>
+            <input type="number" id="duration_minutes" name="duration_minutes" min="1" step="1" required />
+          </label>
+        </div>
+        <label class="notes-label">
+          <span>Notes (optional)</span>
+          <textarea id="notes" name="notes" rows="3"></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="submit" id="submit-btn">Add entry</button>
+          <span id="form-status" role="status" aria-live="polite" class="status-text"></span>
+        </div>
+      </form>
+    </section>
+
+    <section aria-labelledby="entries-heading" class="card">
+      <div class="entries-header">
+        <h2 id="entries-heading">Entries</h2>
+        <button type="button" id="refresh-btn" class="secondary">Refresh</button>
+      </div>
+      <div id="entries-status" role="status" aria-live="polite" class="status-text"></div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Person</th>
+              <th scope="col">Activity</th>
+              <th scope="col">Duration (min)</th>
+              <th scope="col">Notes</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="entries-tbody">
+            <!-- rows injected by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
